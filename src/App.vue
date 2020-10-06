@@ -1,19 +1,23 @@
 <template>
   <div id="app">
-    <h1 class="text-lg min-h-screen text-red-500 p-4">Hello world</h1>
+    <ImageEditor />
   </div>
 </template>
 
 <script>
 import './assets/styles/index.scss';
+import ImageEditor from './components/ImageEditor.vue';
 
 export default {
   name: 'App',
-}
+  components: {
+    ImageEditor,
+  },
+};
 </script>
 
 <style lang="scss">
-#app {
+body {
   @apply bg-gray-300;
 }
 </style>

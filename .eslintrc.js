@@ -2,20 +2,45 @@ module.exports = {
   root: true,
   env: { node: true },
   extends: [
-    'eslint:recommended',
     'plugin:vue/essential',
-    'airbnb-base',
+    '@vue/airbnb',
     'prettier',
-    'prettier/vue',
-    'plugin:prettier/recommended'
   ],
+  plugins: ['prettier'],
   rules: {
-    'comma-dangle': 'off',
-    'import/no-unresolved': 'off',
-    'prettier/prettier': 'warn',
-    indent: [
-      2,
-      2,
-    ]
+    camelcase: 'off',
+    'prettier/prettier': 'error',
+    'import/no-unresolved': [
+      'error',
+      {
+        ignore: ['bundles', 'packs', 'styles'],
+      },
+    ],
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        js: 'never',
+        jsx: 'never',
+        ts: 'never',
+        tsx: 'never',
+      },
+    ],
+    'import/prefer-default-export': 'off',
+    'no-unused-vars': 'off',
+    'lines-between-class-members': 'off',
+    'max-classes-per-file': 'off',
+    'no-new': 'off',
+  },
+  parserOptions: {
+    parser: 'babel-eslint',
+    sourceType: 'module',
+  },
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
   },
 };
