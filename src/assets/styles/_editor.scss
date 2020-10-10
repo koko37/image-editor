@@ -1,0 +1,37 @@
+.editor-tool {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: $toolbar-height--mobile;
+
+  @apply flex flex-row w-full justify-around bg-gray-600 text-white;
+
+  @screen md{
+    position: fixed;
+    left: auto;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: $toolbar-width--md;
+
+    @apply flex-col justify-between h-full;
+  }
+
+  & > div {
+    @apply flex flex-row;
+
+    @screen md{
+      @apply flex-col;
+    }
+  }
+}
+
+.editor-container {
+  margin-bottom: $toolbar-height--mobile;
+  @apply mx-auto;
+
+  @screen md {
+    margin-right: $toolbar-width--md;
+  }
+}

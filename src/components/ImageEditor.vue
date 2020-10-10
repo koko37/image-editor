@@ -10,27 +10,38 @@
 
     <div class="editor-tool">
       <div class="main-tool flex-grow">
-        <Tool :event="() => saveImage()" :iconClass="'fas fa-search fa-lg'">Zoom</Tool>
+        <Tool :event="() => onClickZoom()" :iconClass="'fas fa-search fa-lg'" :active="currentTool==='zoom'">Zoom</Tool>
+        <div v-show="currentTool==='zoom'" class="subtool">
+          Zoom Tool
+        </div>
 
         <Tool
-          :event="() => applyCropping()"
+          :event="() => onClickApplyCrop()"
           :iconClass="'far fa-check-circle fa-lg'"
           v-show="croppedImage"
           :class="{ 'active-tool': currentActiveMethod === 'crop' }"
+           :active="currentTool==='crop'"
         >
         Apply
         </Tool>
 
         <Tool
-          :event="() => cropImage()"
+          :event="() => onClickCrop()"
           :iconClass="'fas fa-crop-alt fa-lg'"
           v-show="!croppedImage"
+          :active="false"
         >
           Crop
         </Tool>
         
-        <Tool :event="() => saveImage()" :iconClass="'fas fa-mask fa-lg'">Mask</Tool>
-        <Tool :event="() => saveImage()" :iconClass="'fas fa-stroopwafel fa-lg'">Blur</Tool>
+        <Tool :event="() => onClickMask()" :iconClass="'fas fa-mask fa-lg'" :active="currentTool==='mask'">Mask</Tool>
+        <div v-show="currentTool==='mask'" class="subtool">
+          Mask Tool
+        </div>
+        <Tool :event="() => onClickBlur()" :iconClass="'fas fa-stroopwafel fa-lg'" :active="currentTool==='blur'">Blur</Tool>
+        <div v-show="currentTool==='blur'" class="subtool">
+          Blur Tool
+        </div>
       </div>
       <div class="load-tool flex-grow-0">
         <ToolUpload
@@ -67,14 +78,15 @@ export default {
       params: {},
       imageUrl: null,
       croppedImage: false,
+      currentTool: '',
     };
   },
   props: {
     canvasWidth: {
-      default: 200,
+      default: 300,
     },
     canvasHeight: {
-      default: 200,
+      default: 300,
     },
     event: {
       type: Function,
@@ -102,6 +114,23 @@ export default {
     );
   },
   methods: {
+    onClickZoom() {
+      this.currentTool="zoom"
+    },
+    onClickCrop() {
+      this.cropImage();
+      this.currentTool="crop"
+    },
+    onClickApplyCrop() {
+      this.applyCropping();
+      this.currentTool=""
+    },
+    onClickMask() {
+      this.currentTool="mask"
+    },
+    onClickBlur() {
+      this.currentTool="blur"
+    },
     cropImage() {
       this.currentActiveMethod = 'crop';
       this.setTool('crop');
@@ -134,49 +163,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss">
-$toolbar-height--mobile: 80px;
-$toolbar-width--md: 240px;
-
-.editor-tool {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: $toolbar-height--mobile;
-
-  @apply flex flex-row w-full justify-around bg-gray-600 text-white;
-
-  @screen md{
-    position: fixed;
-    left: auto;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    width: $toolbar-width--md;
-
-    @apply flex-col justify-between h-full;
-  }
-
-  & > div {
-    @apply flex flex-row;
-
-    @screen md{
-      @apply flex-col;
-    }
-  }
-}
-
-.editor-container {
-  margin-bottom: $toolbar-height--mobile;
-  @apply mx-auto;
-
-  @screen md {
-    margin-right: $toolbar-width--md;
-  }
-}
-canvas {
-  border: 1px solid #00000021;
-}
-</style>
