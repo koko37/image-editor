@@ -18,6 +18,10 @@ export default {
 
 <style lang="scss">
 body {
-  @apply bg-gray-300;
+  @apply bg-gray-800;
+}
+
+#app {
+  @apply flex flex-col my-auto min-h-screen justify-center items-center;
 }
 </style>

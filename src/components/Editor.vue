@@ -6,9 +6,6 @@
 
 <script>
 import { fabric } from 'fabric';
-import Shape from '../lib/shape';
-import Text from '../lib/text';
-import Arrow from '../lib/arrow';
 import CropImage from '../lib/crop';
 import CanvasHistory from '../lib/canvasHistory';
 
@@ -129,125 +126,9 @@ export default {
     },
     set(type, params) {
       switch (type) {
-      case "text":
-        this.currentActiveTool = type;
-        this.params = {
-          fill: (params && params.fill) ? params.fill : this.color,
-          fontFamily: (params && params.fontFamily) ? params.fontFamily : 'Arial',
-          fontSize: (params && params.fontSize) ? params.fontSize : this.fontSize,
-          fontStyle: (params && params.fontStyle) ? params.fontStyle : this.fontStyle,
-          fontWeight: (params && params.fontWeight) ? params.fontWeight : this.fontWeight,
-          placeholder: (params && params.placeholder) ? params.placeholder : 'Add Text',
-          id: (params && params.id) ? params.id : '',
-        };
-        this.addText(this.params);
-        break;
-      case "circle":
-        this.cancelCroppingImage();
-        this.currentActiveTool = type;
-        this.params = {
-          fill: (params && params.fill) ? params.fill : 'transparent',
-          stroke: (params && params.stroke) ? params.stroke : this.color,
-          strokeWidth: (params && params.strokeWidth) ? params.strokeWidth : this.strokeWidth,
-          disableCircleEditing: (params && params.disableCircleEditing) ? params.disableCircleEditing : false,
-          top: (params && params.top) ? params.top : 0,
-          left: (params && params.left) ? params.left : 0,
-          radius: (params && params.radius) ? params.radius : 20,
-          strokeUniform: (params && params.strokeUniform) ? params.strokeUniform : true,
-          noScaleCache: (params && params.noScaleCache) ? params.noScaleCache : false,
-          strokeDashArray: (params && params.strokeDashArray) ? params.strokeDashArray : false,
-          id: (params && params.id) ? params.id : '',
-        };
-        this.customCircle(type, this.params);
-        break;
-      case "rect":
-        this.cancelCroppingImage();
-        this.currentActiveTool = type;
-        this.params = {
-          fill: (params && params.fill) ? params.fill : 'transparent',
-          stroke: (params && params.stroke) ? params.stroke : this.color,
-          strokeWidth: (params && params.strokeWidth) ? params.strokeWidth : this.strokeWidth,
-          angle: (params && params.angle) ? params.angle : 0,
-          width: (params && params.width) ? params.width : null,
-          height: (params && params.height) ? params.height : null,
-          top: (params && params.top) ? params.top : 0,
-          left: (params && params.left) ? params.left : 0,
-          opacity: (params && params.opacity) ? params.opacity : 1,
-          strokeUniform: (params && params.strokeUniform) ? params.strokeUniform : true,
-          noScaleCache: (params && params.noScaleCache) ? params.noScaleCache : false,
-          strokeDashArray: (params && params.strokeDashArray) ? params.strokeDashArray : false,
-          borderRadius: (params && params.borderRadius) ? params.borderRadius : 0,
-          id: (params && params.id) ? params.id : '',
-        };
-        this.customRect(type, this.params);
-        break;
-      case "comment":
-        this.cancelCroppingImage();
-        this.currentActiveTool = type;
-        this.params = {
-          fill: (params && params.fill) ? params.fill : 'transparent',
-          stroke: (params && params.stroke) ? params.stroke : this.color,
-          strokeWidth: (params && params.strokeWidth) ? params.strokeWidth : this.strokeWidth,
-          angle: (params && params.angle) ? params.angle : 0,
-          width: (params && params.width) ? params.width : null,
-          height: (params && params.height) ? params.height : null,
-          top: (params && params.top) ? params.top : 0,
-          left: (params && params.left) ? params.left : 0,
-          opacity: (params && params.opacity) ? params.opacity : 1,
-          strokeUniform: (params && params.strokeUniform) ? params.strokeUniform : true,
-          noScaleCache: (params && params.noScaleCache) ? params.noScaleCache : false,
-          strokeDashArray: (params && params.strokeDashArray) ? params.strokeDashArray : false,
-          borderRadius: (params && params.borderRadius) ? params.borderRadius : 0,
-          id: (params && params.id) ? params.id : '',
-        };
-        this.customRect(type, this.params);
-        break;
-      case "line":
-        this.cancelCroppingImage();
-        this.currentActiveTool = type;
-        this.params = {
-          fill: (params && params.fill) ? params.fill : 'transparent',
-          stroke: (params && params.stroke) ? params.stroke : this.color,
-          strokeWidth: (params && params.strokeWidth) ? params.strokeWidth : this.strokeWidth,
-          angle: (params && params.angle) ? params.angle : 0,
-          width: (params && params.width) ? params.width : null,
-          height: (params && params.height) ? params.height : null,
-          top: (params && params.top) ? params.top : 0,
-          left: (params && params.left) ? params.left : 0,
-          opacity: (params && params.opacity) ? params.opacity : 1,
-          strokeUniform: (params && params.strokeUniform) ? params.strokeUniform : true,
-          noScaleCache: (params && params.noScaleCache) ? params.noScaleCache : false,
-          strokeDashArray: (params && params.strokeDashArray) ? params.strokeDashArray : false,
-          id: (params && params.id) ? params.id : '',
-        };
-        this.customRect(type, this.params);
-        break;
       case 'selectMode':
         this.currentActiveTool = type;
         this.drag();
-        break;
-      case 'arrow':
-        this.currentActiveTool = type;
-        this.params = {
-          fill: (params && params.fill) ? params.fill : 'transparent',
-          stroke: (params && params.stroke) ? params.stroke : this.color,
-          strokeWidth: (params && params.strokeWidth) ? params.strokeWidth : this.strokeWidth,
-          strokeUniform: (params && params.strokeUniform) ? params.strokeUniform : true,
-          noScaleCache: (params && params.noScaleCache) ? params.noScaleCache : false,
-          strokeDashArray: (params && params.strokeDashArray) ? params.strokeDashArray : false,
-          id: (params && params.id) ? params.id : '',
-        };
-        this.drawArrow(this.params);
-        break;
-      case 'freeDrawing':
-        this.currentActiveTool = type;
-        this.params = {
-          stroke: (params && params.stroke) ? params.stroke : this.color,
-          strokeWidth: (params && params.strokeWidth) ? params.strokeWidth : this.strokeWidth,
-          drawingMode: (params && params.drawingMode) ? params.drawingMode : true,
-          id: (params && params.id) ? params.id : '',
-        };
-        this.drawing(this.params);
         break;
       case 'crop':
         this.currentActiveTool = type;
@@ -352,38 +233,6 @@ export default {
       };
       reader.readAsDataURL(e.target.files[0]);
     },
-    customCircle(type, params) {
-      this.createArrow = false;
-      new Arrow(this.canvas, false)
-      this.currentActiveMethod = this.customCircle;
-      this.createRect = false;
-      this.canvas.isDrawingMode = false;
-      if (!params.disableCircleEditing) {
-        this.createCircle = true;
-        new Shape(this.canvas, this.createCircle, type, params);
-      } else {
-        this.drawCircle(params);
-      }
-    },
-    customRect(type, params) {
-      this.createArrow = false;
-      new Arrow(this.canvas, false)
-      this.currentActiveMethod = this.customRect;
-      this.canvas.isDrawingMode = false;
-      this.createCircle = false;
-      if (params.width && params.height) {
-        this.drawRect(params);
-      } else {
-        this.createRect = true;
-        new Shape(this.canvas, this.createRect, type, params);
-      }
-    },
-    drawArrow(params) {
-      this.currentActiveMethod = this.drawArrow;
-      this.drag();
-      this.createArrow = true;
-      new Arrow(this.canvas, this.createArrow, params);
-    },
     cancelCroppingImage() {
       this.croppedImage = false;
       new CropImage(this.canvas, false, false, true)
@@ -413,12 +262,6 @@ export default {
         new Text(this.canvas, false);
       }
       this.cancelCroppingImage();
-    },
-    addText(params) {
-      this.currentActiveMethod = this.addText;
-      this.drag();
-      this.createText = true;
-      new Text(this.canvas, this.createText, params);
     },
     undo() {
       if (this.canvas.getActiveObject()) {
@@ -517,40 +360,6 @@ export default {
       });
       this.canvas.renderAll();
     },
-    drawRect(params) {
-      this.drag();
-      this.canvas.discardActiveObject();
-      if (!this.canvas.getActiveObject()) {
-        this.rectangle = new fabric.Rect({
-          width: params.width,
-          height: params.height,
-          strokeWidth: params.strokeWidth,
-          stroke: params.stroke,
-          fill: params.fill,
-          opacity: params.opacity,
-          left: params.left,
-          top: params.top,
-          noScaleCache: params.noScaleCache
-        });
-        this.canvas.add(this.rectangle);
-      }
-    },
-    drawCircle(params) {
-      this.drag();
-      this.canvas.discardActiveObject();
-      this.circle = new fabric.Circle({
-        left: params.left,
-        top: params.top,
-        radius: params.radius,
-        strokeWidth: params.strokeWidth,
-        stroke: params.stroke,
-        fill: params.fill,
-        borderColor: 'yellow',
-        noScaleCache: params.noScaleCache
-      });
-      this.canvas.add(this.circle);
-      this.canvas.renderAll();
-    }
   }
 }
 </script>

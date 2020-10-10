@@ -1,86 +1,47 @@
 <template>
   <div class="main">
     <div class="editor-container">
-      <div class="editor">
-        <div class="current-color" :style="{ backgroundColor: color }"></div>
-
-        <Tool :event="() => undo()" :iconClass="'fas fa-undo-alt fa-lg'" />
-
-        <Tool :event="() => redo()" :iconClass="'fas fa-redo-alt fa-lg'" />
-
-        <Tool :event="() => clear()" :iconClass="'fas fa-trash-alt fa-lg'" />
-
-        <Tool
-          :event="() => setTool('freeDrawing')"
-          :iconClass="'fas fa-pencil-alt fa-lg'"
-          :class="{ 'active-tool': currentActiveMethod === 'freeDrawing' }"
-        />
-
-        <Tool
-          :event="() => setTool('text')"
-          :iconClass="'fas fa-font fa-lg'"
-          :class="{ 'active-tool': currentActiveMethod === 'text' }"
-        />
-
-        <Tool
-          :event="() => setTool('circle')"
-          :iconClass="'far fa-circle fa-lg'"
-          :class="{ 'active-tool': currentActiveMethod === 'circle' }"
-        />
-
-        <Tool
-          :event="() => setTool('rect')"
-          :iconClass="'far fa-square fa-lg'"
-          :class="{ 'active-tool': currentActiveMethod === 'rect' }"
-        />
-
-        <Tool
-          :event="() => setTool('arrow')"
-          :iconClass="'fas fa-long-arrow-alt-down fa-lg'"
-          :class="{ 'active-tool': currentActiveMethod === 'arrow' }"
-        />
-
-        <Tool
-          :event="() => setTool('selectMode')"
-          :iconClass="'fas fa-arrows-alt fa-lg'"
-          :class="{ 'active-tool': currentActiveMethod === 'selectMode' }"
-        />
-
-        <Tool
-          :event="() => applyCropping()"
-          :iconClass="'far fa-check-circle fa-lg'"
-          v-show="croppedImage"
-          :class="{ 'active-tool': currentActiveMethod === 'crop' }"
-        />
-
-        <Tool
-          :event="() => cropImage()"
-          :iconClass="'fas fa-crop-alt fa-lg'"
-          v-show="!croppedImage"
-        />
-
-        <Tool
-          :event="(e) => uploadImage(e)"
-          :iconClass="'fas fa-file-upload fa-lg'"
-          :labelForUploadImage="true"
-        />
-        <Tool :event="() => saveImage()" :iconClass="'fas fa-save fa-lg'" />
-      </div>
       <Editor
         :canvasWidth="canvasWidth"
         :canvasHeight="canvasHeight"
         ref="editor"
       />
     </div>
-    <div class="colors">
-      <ColorPicker :color="'#e40000'" :event="changeColor" />
-      <ColorPicker :color="'#e8eb34'" :event="changeColor" />
-      <ColorPicker :color="'#a834eb'" :event="changeColor" />
-      <ColorPicker :color="'#65c31a'" :event="changeColor" />
-      <ColorPicker :color="'#34b7eb'" :event="changeColor" />
-      <ColorPicker :color="'#eb34df'" :event="changeColor" />
-      <ColorPicker :color="'#1a10ad'" :event="changeColor" />
-      <ColorPicker :color="'#000000'" :event="changeColor" />
+
+    <div class="editor-tool">
+      <div class="main-tool flex-grow">
+        <Tool :event="() => saveImage()" :iconClass="'fas fa-search fa-lg'">Zoom</Tool>
+
+        <Tool
+          :event="() => applyCropping()"
+          :iconClass="'far fa-check-circle fa-lg'"
+          v-show="croppedImage"
+          :class="{ 'active-tool': currentActiveMethod === 'crop' }"
+        >
+        Apply
+        </Tool>
+
+        <Tool
+          :event="() => cropImage()"
+          :iconClass="'fas fa-crop-alt fa-lg'"
+          v-show="!croppedImage"
+        >
+          Crop
+        </Tool>
+        
+        <Tool :event="() => saveImage()" :iconClass="'fas fa-mask fa-lg'">Mask</Tool>
+        <Tool :event="() => saveImage()" :iconClass="'fas fa-stroopwafel fa-lg'">Blur</Tool>
+      </div>
+      <div class="load-tool flex-grow-0">
+        <ToolUpload
+          :event="(e) => uploadImage(e)"
+          :iconClass="'fas fa-file-upload fa-lg'"
+        >
+          Upload
+        </ToolUpload>
+
+        <Tool :event="() => saveImage()" :iconClass="'fas fa-save fa-lg'">Save</Tool>
+      </div>
     </div>
   </div>
 </template>
@@ -88,6 +49,7 @@
 <script>
 import Editor from './Editor.vue';
 import Tool from './Tool.vue';
+import ToolUpload from './ToolUpload.vue';
 import ColorPicker from './ColorPicker.vue';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -96,20 +58,23 @@ export default {
   components: {
     ColorPicker,
     Tool,
+    ToolUpload,
     Editor,
   },
   data() {
     return {
       currentActiveMethod: null,
       params: {},
-      color: 'black',
       imageUrl: null,
       croppedImage: false,
     };
   },
   props: {
     canvasWidth: {
-      default: 600,
+      default: 200,
+    },
+    canvasHeight: {
+      default: 200,
     },
     event: {
       type: Function,
@@ -120,9 +85,6 @@ export default {
     },
     iconClass: {
       type: String,
-    },
-    canvasHeight: {
-      default: 600,
     },
   },
   mounted() {
@@ -148,10 +110,6 @@ export default {
       this.currentActiveMethod = '';
       this.$refs.editor.applyCropping();
     },
-    changeColor(colorHex) {
-      this.color = colorHex;
-      this.$refs.editor.changeColor(colorHex);
-    },
     saveImage() {
       const image = this.$refs.editor.saveImage();
       this.saveImageAsFile(image);
@@ -173,59 +131,51 @@ export default {
       this.currentActiveMethod = this.clear;
       this.$refs.editor.clear();
     },
-    undo() {
-      this.currentActiveMethod = this.undo;
-      this.$refs.editor.undo();
-    },
-    redo() {
-      this.currentActiveMethod = this.redo;
-      this.$refs.editor.redo();
-    },
   },
 };
 </script>
 
 <style lang="scss">
-.main {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 4rem;
-  display: flex;
-  justify-content: center;
-  .editor-container {
-    display: flex;
-    flex-direction: column;
-    .editor {
-      display: flex;
-      justify-content: space-between;
-      .current-color {
-        border-radius: 5px;
-        min-width: 28px;
-        min-height: 28px;
-      }
-      .active-tool {
-        cursor: pointer;
-        color: #4287f5;
-      }
+$toolbar-height--mobile: 80px;
+$toolbar-width--md: 240px;
+
+.editor-tool {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: $toolbar-height--mobile;
+
+  @apply flex flex-row w-full justify-around bg-gray-600 text-white;
+
+  @screen md{
+    position: fixed;
+    left: auto;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: $toolbar-width--md;
+
+    @apply flex-col justify-between h-full;
+  }
+
+  & > div {
+    @apply flex flex-row;
+
+    @screen md{
+      @apply flex-col;
     }
   }
+}
 
-  .colors {
-    display: flex;
-    flex-direction: column;
-    margin: 40px 25px 0 25px;
-    align-items: center;
-    justify-content: center;
+.editor-container {
+  margin-bottom: $toolbar-height--mobile;
+  @apply mx-auto;
+
+  @screen md {
+    margin-right: $toolbar-width--md;
   }
 }
-
-.custom-editor {
-  margin-top: 20px;
-}
-
 canvas {
   border: 1px solid #00000021;
 }
