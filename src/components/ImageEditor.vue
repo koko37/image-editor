@@ -12,7 +12,7 @@
       <div class="main-tool flex-grow">
         <Tool :event="() => onClickZoom()" :iconClass="'fas fa-search fa-lg'" :active="currentTool==='zoom'">Zoom</Tool>
         <div v-show="currentTool==='zoom'" class="subtool">
-          Zoom Tool
+          <input type="range" name="zoom" id="zoom" min="0" max="100" class="w-full" />
         </div>
 
         <Tool
@@ -40,7 +40,7 @@
         </div>
         <Tool :event="() => onClickBlur()" :iconClass="'fas fa-stroopwafel fa-lg'" :active="currentTool==='blur'">Blur</Tool>
         <div v-show="currentTool==='blur'" class="subtool">
-          Blur Tool
+          <input type="range" name="blur" id="blur" min="0" max="100" class="w-full" />
         </div>
       </div>
       <div class="load-tool flex-grow-0">

@@ -1,6 +1,7 @@
 .tool {
   @apply flex flex-col items-center py-2 px-3 mt-2;
   @apply border-pink-600 border-none cursor-pointer;
+  min-width: 60px;
 
   &.active {
     @apply bg-gray-800 text-pink-600;
