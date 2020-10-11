@@ -67,7 +67,7 @@ export default {
   },
   data() {
     return {
-      // imageUrl: null,
+      imageUrl: null,
       currentTool: '',
       canvas: null,
     };
@@ -102,6 +102,88 @@ export default {
     },
     onClickCrop() {
       this.currentTool="crop"
+
+      const cropperWidth = this.canvas.width * 0.5;
+      const cropperHeight = this.canvas.height * 0.5;
+      const cornerSize = 10;
+      const hasControls = true;
+      const borderColor = '#000';
+      const cornerColor = '#000';
+      const cornerStyle = 'circle';
+      const transparentCorners = false;
+      const hasRotatingPoint = false;
+      const lockUniScaling = true;
+      const noScaleCache = false;
+      const strokeUniform = true;
+
+      let inst = this;
+      let src = this.canvas.toDataURL('image/jpeg', 1);
+      new fabric.Image.fromURL(src, function (oImg) {
+        let rectRed = new fabric.Rect({
+          left: (oImg.width - cropperWidth) / 2,
+          top: (oImg.height - cropperHeight) / 2,
+          width: cropperWidth,
+          height: cropperHeight,
+          fill: '',
+          imageWidth: oImg.width,
+          imageHeight: oImg.height,
+          cornerSize,
+          hasControls,
+          borderColor,
+          cornerColor,
+          cornerStyle,
+          transparentCorners,
+          hasRotatingPoint,
+          lockUniScaling,
+          noScaleCache,
+          strokeUniform,
+
+          clipTo: function (context) {
+            context.translate(-this.width / 2, -this.height / 2);
+            for (let x = 0; x <= this.width; x += this.width / 3) {
+              context.moveTo(x, 0);
+              context.lineTo(x, this.height);
+            }
+            for (let y = 0; y <= this.height; y += this.height / 3) {
+              context.moveTo(0, y);
+              context.lineTo(this.width, y);
+            }
+            context.strokeStyle = '#000';
+            context.stroke();
+          }
+        });
+
+        rectRed.setControlsVisibility({
+          tl: true,
+          mt: false,
+          tr: true,
+          ml: false,
+          mr: false,
+          bl: true,
+          mb: false,
+          br: true
+        }),
+        inst.canvas.add(rectRed);
+        inst.canvas.bringToFront(rectRed);
+        inst.canvas.setActiveObject(rectRed)
+
+        const clip = {
+          left: 10,
+          top: 10,
+          right: 30,
+          bottom: 30
+        }
+        const clipOverlay = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + clip.top + ' H ' + clip.left + ' V '
+          + clip.bottom + ' H ' + clip.right + ' V ' + clip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z', {
+          left: 0,
+          top: 0,
+          fill: '#fff',
+          opacity: 0.7,
+          selectable: false
+        });
+        inst.canvas.add(clipOverlay);
+      });
+      this.canvas.renderAll();
     },
     onClickApplyCrop() {
       this.currentTool=""
@@ -133,14 +215,14 @@ export default {
       // this.$refs.editor.set(type, params);
     },
     uploadImage(e) {
-      const imgUrl = URL.createObjectURL(e.target.files[0]);
+      this.imgUrl = URL.createObjectURL(e.target.files[0]);
       let imgObj = new Image();
       const imgHeightLimit = Math.round(window.innerHeight * 0.8);
       const imgWidthLimit = Math.round(window.innerWidth * 0.8);
       let imgDrawWidth, imgDrawHeight;
       let scaleX, scaleY;
 
-      imgObj.src = imgUrl;
+      imgObj.src = this.imgUrl;
       imgObj.onload = () => {
         const imgSizeAspect = imgObj.width / imgObj.height;
 
@@ -168,7 +250,7 @@ export default {
           height: imgDrawHeight,
         });
 
-        this.canvas.setBackgroundImage(imgUrl,
+        this.canvas.setBackgroundImage(this.imgUrl,
           this.canvas.renderAll.bind(this.canvas),
           {
             left: 0,
