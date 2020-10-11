@@ -14,8 +14,8 @@
         <Tool
           :event="() => onClickApplyCrop()"
           :iconClass="'far fa-check-circle fa-lg'"
-          v-show="croppedImage"
-          :class="{ 'active-tool': currentActiveMethod === 'crop' }"
+          v-show="currentTool==='crop'"
+          :class="{ 'active-tool': currentTool === 'crop' }"
            :active="currentTool==='crop'"
         >
         Apply
@@ -24,7 +24,7 @@
         <Tool
           :event="() => onClickCrop()"
           :iconClass="'fas fa-crop-alt fa-lg'"
-          v-show="!croppedImage"
+          v-show="currentTool!=='crop'"
           :active="false"
         >
           Crop
@@ -54,71 +54,56 @@
 </template>
 
 <script>
-import Editor from './Editor.vue';
+import { fabric } from 'fabric';
 import Tool from './Tool.vue';
 import ToolUpload from './ToolUpload.vue';
-import ColorPicker from './ColorPicker.vue';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 export default {
   name: 'ImageEditor',
   components: {
-    ColorPicker,
     Tool,
     ToolUpload,
-    Editor,
   },
   data() {
     return {
-      currentActiveMethod: null,
-      params: {},
-      imageUrl: null,
-      croppedImage: false,
+      // imageUrl: null,
       currentTool: '',
+      canvas: null,
     };
   },
-  props: {
-    canvasWidth: {
-      default: 300,
-    },
-    canvasHeight: {
-      default: 300,
-    },
-    event: {
-      type: Function,
-    },
-    labelForUploadImage: {
-      type: Boolean,
-      default: false,
-    },
-    iconClass: {
-      type: String,
-    },
-  },
   mounted() {
-    if (this.imageUrl) {
-      this.$refs.editor.setBackgroundImage(this.imageUrl);
-      this.croppedImage = this.$refs.editor.croppedImage;
-    }
-    this.$watch(
-      () => {
-        return this.$refs.editor.croppedImage;
-      },
-      (val) => {
-        this.croppedImage = val;
-      }
-    );
+    this.canvas = new fabric.Canvas('editor');
+    // let rect = new fabric.Rect({
+    //   left: 10,
+    //   top: 10,
+    //   width: 20,
+    //   height: 20,
+    //   fill: 'red'
+    // });
+    // this.canvas.add(rect);
+
+    // if (this.imageUrl) {
+    //   this.$refs.editor.setBackgroundImage(this.imageUrl);
+    //   this.croppedImage = this.$refs.editor.croppedImage;
+    // }
+    // this.$watch(
+    //   () => {
+    //     return this.$refs.editor.croppedImage;
+    //   },
+    //   (val) => {
+    //     this.croppedImage = val;
+    //   }
+    // );
   },
   methods: {
     onClickZoom() {
       this.currentTool="zoom"
     },
     onClickCrop() {
-      this.cropImage();
       this.currentTool="crop"
     },
     onClickApplyCrop() {
-      this.applyCropping();
       this.currentTool=""
     },
     onClickMask() {
@@ -128,33 +113,76 @@ export default {
       this.currentTool="blur"
     },
     cropImage() {
-      this.currentActiveMethod = 'crop';
-      this.setTool('crop');
+      // this.setTool('crop');
     },
     applyCropping() {
-      this.currentActiveMethod = '';
-      this.$refs.editor.applyCropping();
+      // this.$refs.editor.applyCropping();
     },
     saveImage() {
-      const image = this.$refs.editor.saveImage();
-      this.saveImageAsFile(image);
+      // const image = this.$refs.editor.saveImage();
+      // this.saveImageAsFile(image);
     },
     saveImageAsFile(base64) {
-      const link = document.createElement('a');
-      link.setAttribute('href', base64);
-      link.setAttribute('download', 'image-markup');
-      link.click();
+      // const link = document.createElement('a');
+      // link.setAttribute('href', base64);
+      // link.setAttribute('download', 'image-markup');
+      // link.click();
     },
     setTool(type, params) {
-      this.currentActiveMethod = type;
-      this.$refs.editor.set(type, params);
+      // this.currentActiveMethod = type;
+      // this.$refs.editor.set(type, params);
     },
     uploadImage(e) {
-      this.$refs.editor.uploadImage(e);
+      const imgUrl = URL.createObjectURL(e.target.files[0]);
+      let imgObj = new Image();
+      const imgHeightLimit = Math.round(window.innerHeight * 0.8);
+      const imgWidthLimit = Math.round(window.innerWidth * 0.8);
+      let imgDrawWidth, imgDrawHeight;
+      let scaleX, scaleY;
+
+      imgObj.src = imgUrl;
+      imgObj.onload = () => {
+        const imgSizeAspect = imgObj.width / imgObj.height;
+
+        // adjust image size to draw
+        if (imgObj.height > imgHeightLimit) {
+          imgDrawHeight = imgHeightLimit;
+          imgDrawWidth = Math.round(imgHeightLimit * imgSizeAspect);
+        } else {
+          imgDrawWidth = imgObj.width;
+          imgDrawHeight = imgObj.height;
+        }
+        if (imgDrawWidth > imgWidthLimit) {
+          imgDrawWidth = imgWidthLimit;
+          imgDrawHeight = Math.round(imgDrawWidth / imgSizeAspect);
+        } 
+
+        scaleX = scaleY = imgDrawHeight / imgObj.height;
+
+        console.log("img size:", imgObj.width, imgObj.height);
+        console.log("canvas size:", imgDrawWidth, imgDrawHeight);
+        console.log("scale:", scaleX, scaleY);
+
+        this.canvas.setDimensions({
+          width: imgDrawWidth,
+          height: imgDrawHeight,
+        });
+
+        this.canvas.setBackgroundImage(imgUrl,
+          this.canvas.renderAll.bind(this.canvas),
+          {
+            left: 0,
+            top: 0,
+            scaleX: scaleX,
+            scaleY: scaleY,
+          }
+        );
+        this.canvas.renderAll();
+      }
     },
     clear() {
-      this.currentActiveMethod = this.clear;
-      this.$refs.editor.clear();
+      // this.currentActiveMethod = this.clear;
+      // this.$refs.editor.clear();
     },
   },
 };
