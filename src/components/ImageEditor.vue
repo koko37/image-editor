@@ -218,32 +218,8 @@ export default {
       this.canvas.renderAll();
     },
     onClickApplyCrop() {
-      console.log("start crop apply ...", JSON.stringify(this.imgUrl));
-
       let image;
       let inst = this;
-      // let backgroundImage = new Promise((resolve => {
-      //   fabric.util.loadImage(inst.imgUrl, function (img) {
-
-      //     image = new fabric.Image(img);
-      //     image.set({
-      //       top: (inst.rectRed.height / 2 - inst.rectRed.top + inst.clip.top),
-      //       left: (inst.rectRed.width / 2 - inst.rectRed.left + inst.clip.left),
-      //       originX: 'center',
-      //       originY: 'center',
-      //     })
-      //     inst.canvas.setHeight(inst.rectRed.height * inst.rectRed.scaleY)
-      //     inst.canvas.setWidth(inst.rectRed.width * inst.rectRed.scaleX)
-      //     inst.canvas.calcOffset();
-      //     // inst.imgUrl = inst.canvas.toDataURL("image/jpeg", 1);
-      //     resolve()
-      //   })
-      // }));
-
-      // backgroundImage.then(() => {
-      //   // inst.canvas.setBackgroundImage(inst.imgUrl, inst.canvas.renderAll.bind(inst.canvas));
-      //   inst.canvas.renderAll();
-      // });
       const selectedRect = inst.rectRed;
       const clipRect = inst.clip;
 
@@ -328,16 +304,6 @@ export default {
       link.setAttribute('href', this.canvas.toDataURL("image/jpeg", 1));
       link.setAttribute('download', 'edit-result');
       link.click();
-    },
-    saveImageAsFile(base64) {
-      // const link = document.createElement('a');
-      // link.setAttribute('href', base64);
-      // link.setAttribute('download', 'image-markup');
-      // link.click();
-    },
-    setTool(type, params) {
-      // this.currentActiveMethod = type;
-      // this.$refs.editor.set(type, params);
     },
     bindCropEvents() {
       let inst = this;
@@ -439,16 +405,6 @@ export default {
           height: imgDrawHeight,
         });
 
-        // this.canvas.setBackgroundImage(this.imgUrl,
-        //   this.canvas.renderAll.bind(this.canvas),
-        //   {
-        //     left: 0,
-        //     top: 0,
-        //     scaleX: inst.scaleX,
-        //     scaleY: inst.scaleY,
-        //   }
-        // );
-
         fabric.Image.fromURL(this.imgUrl, function(newImg){
           inst.canvas.clear();
           inst.bgImage = newImg.set({left: 0, top: 0, sclaeX: inst.scaleX, scaleY: inst.scaleY});
@@ -458,10 +414,6 @@ export default {
           inst.canvas.renderAll();
         });
       }
-    },
-    clear() {
-      // this.currentActiveMethod = this.clear;
-      // this.$refs.editor.clear();
     },
   },
 };
