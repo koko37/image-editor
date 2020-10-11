@@ -272,9 +272,10 @@ export default {
       });
       let inst = this;
       inst.canvas.getObjects().forEach((obj) => {
+        obj.filters.pop();
         obj.filters.push(inst.blurFilter);
         obj.applyFilters();
-      })     
+      });
       this.canvas.renderAll();
     },
     deactiveCrop() {
