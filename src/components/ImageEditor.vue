@@ -234,13 +234,12 @@ export default {
           inst.canvas.setHeight(inst.rectRed.height * inst.rectRed.scaleY)
           inst.canvas.setWidth(inst.rectRed.width * inst.rectRed.scaleX)
           inst.canvas.calcOffset();
-          inst.imgUrl = inst.canvas.toDataURL("image/jpeg", 1)
+          inst.imgUrl = inst.canvas.toDataURL("image/jpeg", 1);
           resolve()
         })
       }));
 
       backgroundImage.then(() => {
-        console.log("apply crop", inst.imgUrl);
         inst.canvas.setBackgroundImage(inst.imgUrl, inst.canvas.renderAll.bind(inst.canvas));
         inst.canvas.renderAll();
       });
@@ -286,8 +285,10 @@ export default {
       this.canvas.remove(this.rectRed);
     },
     saveImage() {
-      // const image = this.$refs.editor.saveImage();
-      // this.saveImageAsFile(image);
+      const link = document.createElement('a');
+      link.setAttribute('href', this.canvas.toDataURL("image/jpeg", 1));
+      link.setAttribute('download', 'edit-result');
+      link.click();
     },
     saveImageAsFile(base64) {
       // const link = document.createElement('a');
