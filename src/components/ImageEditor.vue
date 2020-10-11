@@ -42,9 +42,10 @@
             <img src="../assets/images/mask_3.png" ref="mask3"/>
           </div>
         </div>
+
         <Tool :event="() => onClickBlur()" :iconClass="'fas fa-stroopwafel fa-lg'" :active="currentTool==='blur'">Blur</Tool>
         <div v-show="currentTool==='blur'" class="subtool">
-          <input type="range" name="blur" id="blur" min="0" max="100" class="w-full" />
+          <input type="range" name="blur" id="blur" min="0" max="100" class="w-full" value="0" @change="onBlurDegreeChanged" />
         </div>
       </div>
       <div class="load-tool flex-grow-0">
@@ -87,6 +88,7 @@ export default {
       clip: null,
       cropRegionMoving: false,
       rectRed: null,
+      bgImage: null,
     };
   },
   mounted() {
@@ -220,32 +222,57 @@ export default {
 
       let image;
       let inst = this;
-      let backgroundImage = new Promise((resolve => {
-        fabric.util.loadImage(inst.imgUrl, function (img) {
+      // let backgroundImage = new Promise((resolve => {
+      //   fabric.util.loadImage(inst.imgUrl, function (img) {
 
-          image = new fabric.Image(img);
-          image.set({
-            top: (inst.rectRed.height / 2 - inst.rectRed.top + inst.clip.top),
-            left: (inst.rectRed.width / 2 - inst.rectRed.left + inst.clip.left),
-            originX: 'center',
-            originY: 'center',
-          })
-          inst.canvas.setBackgroundImage(image, inst.canvas.renderAll.bind(inst.canvas));
-          inst.canvas.setHeight(inst.rectRed.height * inst.rectRed.scaleY)
-          inst.canvas.setWidth(inst.rectRed.width * inst.rectRed.scaleX)
-          inst.canvas.calcOffset();
-          inst.imgUrl = inst.canvas.toDataURL("image/jpeg", 1);
-          resolve()
-        })
-      }));
+      //     image = new fabric.Image(img);
+      //     image.set({
+      //       top: (inst.rectRed.height / 2 - inst.rectRed.top + inst.clip.top),
+      //       left: (inst.rectRed.width / 2 - inst.rectRed.left + inst.clip.left),
+      //       originX: 'center',
+      //       originY: 'center',
+      //     })
+      //     inst.canvas.setHeight(inst.rectRed.height * inst.rectRed.scaleY)
+      //     inst.canvas.setWidth(inst.rectRed.width * inst.rectRed.scaleX)
+      //     inst.canvas.calcOffset();
+      //     // inst.imgUrl = inst.canvas.toDataURL("image/jpeg", 1);
+      //     resolve()
+      //   })
+      // }));
 
-      backgroundImage.then(() => {
-        inst.canvas.setBackgroundImage(inst.imgUrl, inst.canvas.renderAll.bind(inst.canvas));
+      // backgroundImage.then(() => {
+      //   // inst.canvas.setBackgroundImage(inst.imgUrl, inst.canvas.renderAll.bind(inst.canvas));
+      //   inst.canvas.renderAll();
+      // });
+      const selectedRect = inst.rectRed;
+      const clipRect = inst.clip;
+
+      inst.canvas.remove(inst.clipOverlay);
+      inst.canvas.remove(inst.rectRed);
+      inst.imgUrl = inst.canvas.toDataURL("image/jpeg", 1);
+      console.log("selectedRect: ", selectedRect.left, selectedRect.top, selectedRect.width, selectedRect.height);
+      inst.canvas.clear();
+      
+      inst.canvas.setWidth(inst.rectRed.width * inst.rectRed.scaleX);
+      inst.canvas.setHeight(inst.rectRed.height * inst.rectRed.scaleY);
+
+      fabric.Image.fromURL(this.imgUrl, function(newImg){
+        console.log("crop: ", selectedRect);
+        inst.bgImage = newImg.set({
+          left: (selectedRect.width / 2 - selectedRect.left + clipRect.left),
+          top: (selectedRect.height / 2 - selectedRect.top + clipRect.top),
+          originX: 'center',
+          originY: 'center'
+        });
+        inst.bgImage.selectable = false;
+
+        inst.canvas.add(inst.bgImage);
         inst.canvas.renderAll();
       });
 
       this.deactiveCrop();
       this.currentTool="";
+      this.cropRegionMoving = false;
     },
     onClickMask() {
       this.deactiveCrop();
@@ -271,7 +298,8 @@ export default {
       fabric.Image.fromURL(imgSrc, function(maskImg){
         let newMaskImage = maskImg.set({left: 10, top: 10, width: maskImg.width, height: maskImg.height});
         inst.canvas.add(newMaskImage);
-      })
+        inst.canvas.setActiveObject(newMaskImage);
+      });
     },
     onClickBlur() {
       // clear previous state
@@ -279,6 +307,17 @@ export default {
       this.currentSubTool = "";
 
       this.currentTool="blur";
+    },
+    onBlurDegreeChanged(e) {
+      const intensity = parseFloat(e.target.value)/100;
+      console.log("blur intensity:", intensity);
+      let filter = new fabric.Image.filters.Blur({
+        blur: intensity
+      });
+      let obj = this.canvas.getActiveObject();
+
+      obj.filters.push(filter);
+      this.canvas.renderAll();
     },
     deactiveCrop() {
       this.canvas.remove(this.clipOverlay);
@@ -303,15 +342,12 @@ export default {
     bindCropEvents() {
       let inst = this;
       inst.canvas.on("mouse:down", function (o) {
-        console.log("down ...");
         inst.cropRegionMoving = true;
       });
       inst.canvas.on("mouse:up", function (o) {
-        console.log("up ...");
         inst.cropRegionMoving = false;
       });
       inst.canvas.on("object:scaling", function (e) {
-        console.log("scaling ...");
         if (inst.cropRegionMoving === false) return;
         let target = e.target;
         let newClip = {
@@ -359,6 +395,11 @@ export default {
 
     },
     uploadImage(e) {
+      // update previous state
+      this.deactiveCrop();
+      this.currentSubTool = "";
+      this.currentTool = "";
+
       this.imgUrl = URL.createObjectURL(e.target.files[0]);
       let imgObj = new Image();
       const imgHeightLimit = Math.round(window.innerHeight * 0.8);
@@ -395,16 +436,24 @@ export default {
           height: imgDrawHeight,
         });
 
-        this.canvas.setBackgroundImage(this.imgUrl,
-          this.canvas.renderAll.bind(this.canvas),
-          {
-            left: 0,
-            top: 0,
-            scaleX: inst.scaleX,
-            scaleY: inst.scaleY,
-          }
-        );
-        this.canvas.renderAll();
+        // this.canvas.setBackgroundImage(this.imgUrl,
+        //   this.canvas.renderAll.bind(this.canvas),
+        //   {
+        //     left: 0,
+        //     top: 0,
+        //     scaleX: inst.scaleX,
+        //     scaleY: inst.scaleY,
+        //   }
+        // );
+
+        fabric.Image.fromURL(this.imgUrl, function(newImg){
+          inst.canvas.clear();
+          inst.bgImage = newImg.set({left: 0, top: 0, sclaeX: inst.scaleX, scaleY: inst.scaleY});
+          inst.bgImage.selectable = false;
+
+          inst.canvas.add(inst.bgImage);
+          inst.canvas.renderAll();
+        });
       }
     },
     clear() {
