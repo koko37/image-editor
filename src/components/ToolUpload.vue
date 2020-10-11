@@ -6,7 +6,7 @@
     </label>
     <input
       id="chooseImage"
-      style="visibility: hidden; width:0;"
+      style="display: none; width:0;"
       type="file"
       @change="event"
       accept="image/*"

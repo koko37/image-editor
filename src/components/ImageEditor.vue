@@ -1,11 +1,7 @@
 <template>
   <div class="main">
-    <div class="editor-container">
-      <Editor
-        :canvasWidth="canvasWidth"
-        :canvasHeight="canvasHeight"
-        ref="editor"
-      />
+    <div class="container">
+      <canvas id="editor"></canvas>
     </div>
 
     <div class="editor-tool">

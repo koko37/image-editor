@@ -1,0 +1,40 @@
+.main {
+  @apply flex flex-col w-full min-h-screen;
+  @screen md {
+    @apply flex-row;
+  }
+}
+
+.container {
+  @apply flex-grow;
+  @apply flex items-center justify-center;
+  @screen md{
+    @apply min-h-screen;
+  }
+}
+
+.editor-tool {
+  @apply flex flex-row justify-around;
+  @apply bg-gray-600 text-white;
+
+  @apply  w-full;
+  height: $toolbar-height--mobile;
+
+  @screen md{
+    width: $toolbar-width--md;
+    @apply flex-col justify-between min-h-screen;
+  }
+
+  & > div {
+    @apply flex flex-row;
+
+    @screen md{
+      @apply flex-col;
+    }
+  }
+}
+
+#editor {
+  @apply bg-white;
+  width: 90%;
+}

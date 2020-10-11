@@ -20,8 +20,4 @@ export default {
 body {
   @apply bg-gray-800;
 }
-
-#app {
-  @apply flex flex-col my-auto min-h-screen justify-center items-center;
-}
 </style>
