@@ -42,4 +42,16 @@
     position: static;
     @apply bg-gray-600;
   }
+
+  .mask-select {
+    @apply py-2 px-1 border-none p-2;
+    width: 20%;
+    @screen md{
+      width: 30%;
+    }
+    
+    &:hover, &.active {
+      @apply bg-gray-800;
+    }
+  }
 }

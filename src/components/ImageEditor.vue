@@ -31,8 +31,16 @@
         </Tool>
         
         <Tool :event="() => onClickMask()" :iconClass="'fas fa-mask fa-lg'" :active="currentTool==='mask'">Mask</Tool>
-        <div v-show="currentTool==='mask'" class="subtool">
-          Mask Tool
+        <div v-show="currentTool==='mask'" class="subtool flex flex-row justify-between">
+          <div id="mask1" class="mask-select" :class="{'active': currentSubTool==='mask_1'}" @click="onClickMaskType('mask_1')">
+            <img src="../assets/images/mask_1.png" ref="mask1"/>
+          </div>
+          <div id="mask2" class="mask-select" :class="{'active': currentSubTool==='mask_2'}" @click="onClickMaskType('mask_2')">
+            <img src="../assets/images/mask_2.png" ref="mask2"/>
+          </div>
+          <div id="mask3" class="mask-select" :class="{'active': currentSubTool==='mask_3'}" @click="onClickMaskType('mask_3')">
+            <img src="../assets/images/mask_3.png" ref="mask3"/>
+          </div>
         </div>
         <Tool :event="() => onClickBlur()" :iconClass="'fas fa-stroopwafel fa-lg'" :active="currentTool==='blur'">Blur</Tool>
         <div v-show="currentTool==='blur'" class="subtool">
@@ -67,8 +75,12 @@ export default {
   },
   data() {
     return {
-      imageUrl: null,
+      imgUrl: null,
+      scaleX: null,
+      scaleY: null,
+
       currentTool: '',
+      currentSubTool: '',
       canvas: null,
 
       clipOverlay: null,
@@ -103,9 +115,16 @@ export default {
   },
   methods: {
     onClickZoom() {
+      // clear previous state
+      this.deactiveCrop();
+      this.currentSubTool = "";
+
       this.currentTool="zoom"
     },
     onClickCrop() {
+      // clear previous state
+      this.currentSubTool = "";
+
       this.currentTool="crop"
 
       const cropperWidth = this.canvas.width * 0.5;
@@ -114,7 +133,7 @@ export default {
       const hasControls = true;
       const borderColor = '#000';
       const cornerColor = '#000';
-      const cornerStyle = 'circle';
+      const cornerStyle = 'rect';
       const transparentCorners = false;
       const hasRotatingPoint = false;
       const lockUniScaling = true;
@@ -197,19 +216,74 @@ export default {
       this.canvas.renderAll();
     },
     onClickApplyCrop() {
-      this.currentTool=""
+      console.log("start crop apply ...", JSON.stringify(this.imgUrl));
+
+      let image;
+      let inst = this;
+      let backgroundImage = new Promise((resolve => {
+        fabric.util.loadImage(inst.imgUrl, function (img) {
+
+          image = new fabric.Image(img);
+          image.set({
+            top: (inst.rectRed.height / 2 - inst.rectRed.top + inst.clip.top),
+            left: (inst.rectRed.width / 2 - inst.rectRed.left + inst.clip.left),
+            originX: 'center',
+            originY: 'center',
+          })
+          inst.canvas.setBackgroundImage(image, inst.canvas.renderAll.bind(inst.canvas));
+          inst.canvas.setHeight(inst.rectRed.height * inst.rectRed.scaleY)
+          inst.canvas.setWidth(inst.rectRed.width * inst.rectRed.scaleX)
+          inst.canvas.calcOffset();
+          inst.imgUrl = inst.canvas.toDataURL("image/jpeg", 1)
+          resolve()
+        })
+      }));
+
+      backgroundImage.then(() => {
+        console.log("apply crop", inst.imgUrl);
+        inst.canvas.setBackgroundImage(inst.imgUrl, inst.canvas.renderAll.bind(inst.canvas));
+        inst.canvas.renderAll();
+      });
+
+      this.deactiveCrop();
+      this.currentTool="";
     },
     onClickMask() {
-      this.currentTool="mask"
+      this.deactiveCrop();
+      this.currentTool="mask";
+      this.currentSubTool = "";
+    },
+    onClickMaskType(maskType) {
+      console.log("sub type:", maskType);
+      this.currentSubTool = maskType;
+      let inst = this;
+      let imgSrc = '';
+      switch(maskType) {
+        case 'mask_1':
+          imgSrc = this.$refs.mask1.src;
+          break;
+        case 'mask_2':
+          imgSrc = this.$refs.mask2.src;
+          break;
+        case 'mask_3':
+          imgSrc = this.$refs.mask3.src;
+          break;
+      }
+      fabric.Image.fromURL(imgSrc, function(maskImg){
+        let newMaskImage = maskImg.set({left: 10, top: 10, width: maskImg.width, height: maskImg.height});
+        inst.canvas.add(newMaskImage);
+      })
     },
     onClickBlur() {
-      this.currentTool="blur"
+      // clear previous state
+      this.deactiveCrop();
+      this.currentSubTool = "";
+
+      this.currentTool="blur";
     },
-    cropImage() {
-      // this.setTool('crop');
-    },
-    applyCropping() {
-      // this.$refs.editor.applyCropping();
+    deactiveCrop() {
+      this.canvas.remove(this.clipOverlay);
+      this.canvas.remove(this.rectRed);
     },
     saveImage() {
       // const image = this.$refs.editor.saveImage();
@@ -290,6 +364,7 @@ export default {
       const imgWidthLimit = Math.round(window.innerWidth * 0.8);
       let imgDrawWidth, imgDrawHeight;
       let scaleX, scaleY;
+      let inst = this;
 
       imgObj.src = this.imgUrl;
       imgObj.onload = () => {
@@ -308,11 +383,11 @@ export default {
           imgDrawHeight = Math.round(imgDrawWidth / imgSizeAspect);
         } 
 
-        scaleX = scaleY = imgDrawHeight / imgObj.height;
+        inst.scaleX = inst.scaleY = imgDrawHeight / imgObj.height;
 
         console.log("img size:", imgObj.width, imgObj.height);
         console.log("canvas size:", imgDrawWidth, imgDrawHeight);
-        console.log("scale:", scaleX, scaleY);
+        console.log("scale:", inst.scaleX, inst.scaleY);
 
         this.canvas.setDimensions({
           width: imgDrawWidth,
@@ -324,8 +399,8 @@ export default {
           {
             left: 0,
             top: 0,
-            scaleX: scaleX,
-            scaleY: scaleY,
+            scaleX: inst.scaleX,
+            scaleY: inst.scaleY,
           }
         );
         this.canvas.renderAll();
