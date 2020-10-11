@@ -70,6 +70,11 @@ export default {
       imageUrl: null,
       currentTool: '',
       canvas: null,
+
+      clipOverlay: null,
+      clip: null,
+      cropRegionMoving: false,
+      rectRed: null,
     };
   },
   mounted() {
@@ -116,10 +121,15 @@ export default {
       const noScaleCache = false;
       const strokeUniform = true;
 
+      this.bindCropEvents();
+      this.canvas.selectable = false;
+      this.canvas.uniScaleTransform = true;
+      this.canvas.renderAll();
+
       let inst = this;
       let src = this.canvas.toDataURL('image/jpeg', 1);
       new fabric.Image.fromURL(src, function (oImg) {
-        let rectRed = new fabric.Rect({
+        inst.rectRed = new fabric.Rect({
           left: (oImg.width - cropperWidth) / 2,
           top: (oImg.height - cropperHeight) / 2,
           width: cropperWidth,
@@ -153,35 +163,36 @@ export default {
           }
         });
 
-        rectRed.setControlsVisibility({
+        inst.rectRed.setControlsVisibility({
           tl: true,
-          mt: false,
+          mt: true,
           tr: true,
-          ml: false,
-          mr: false,
+          ml: true,
+          mr: true,
           bl: true,
-          mb: false,
-          br: true
+          mb: true,
+          br: true,
+          mtr: false,
         }),
-        inst.canvas.add(rectRed);
-        inst.canvas.bringToFront(rectRed);
-        inst.canvas.setActiveObject(rectRed)
+        inst.canvas.add(inst.rectRed);
+        inst.canvas.bringToFront(inst.rectRed);
+        inst.canvas.setActiveObject(inst.rectRed)
 
-        const clip = {
-          left: 10,
-          top: 10,
-          right: 30,
-          bottom: 30
+        inst.clip = {
+          left: inst.rectRed.left,
+          top: inst.rectRed.top,
+          right: inst.rectRed.width + inst.rectRed.left,
+          bottom: inst.rectRed.height + inst.rectRed.top
         }
-        const clipOverlay = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + clip.top + ' H ' + clip.left + ' V '
-          + clip.bottom + ' H ' + clip.right + ' V ' + clip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z', {
+        inst.clipOverlay = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + inst.clip.top + ' H ' + inst.clip.left + ' V '
+          + inst.clip.bottom + ' H ' + inst.clip.right + ' V ' + inst.clip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z', {
           left: 0,
           top: 0,
           fill: '#fff',
           opacity: 0.7,
           selectable: false
         });
-        inst.canvas.add(clipOverlay);
+        inst.canvas.add(inst.clipOverlay);
       });
       this.canvas.renderAll();
     },
@@ -213,6 +224,64 @@ export default {
     setTool(type, params) {
       // this.currentActiveMethod = type;
       // this.$refs.editor.set(type, params);
+    },
+    bindCropEvents() {
+      let inst = this;
+      inst.canvas.on("mouse:down", function (o) {
+        console.log("down ...");
+        inst.cropRegionMoving = true;
+      });
+      inst.canvas.on("mouse:up", function (o) {
+        console.log("up ...");
+        inst.cropRegionMoving = false;
+      });
+      inst.canvas.on("object:scaling", function (e) {
+        console.log("scaling ...");
+        if (inst.cropRegionMoving === false) return;
+        let target = e.target;
+        let newClip = {
+          left: target.left,
+          top: target.top,
+          right: inst.canvas.width - target.left + (target.left - inst.clip.left) * 2 + (target.width * target.scaleX) - target.width,
+          bottom: inst.canvas.height - target.top + (target.top - inst.clip.top) * 2 + (target.height * target.scaleY) - target.height
+        }
+        let updatedPath = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + newClip.top + ' H ' + newClip.left + ' V '
+          + newClip.bottom + ' H ' + newClip.right + ' V ' + newClip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z');
+        inst.clipOverlay.set({
+          path: updatedPath.path,
+        });
+        inst.clipOverlay.setCoords();
+
+        inst.canvas.bringToFront(inst.rectRed);
+        inst.canvas.setActiveObject(inst.rectRed)
+
+        inst.canvas.renderAll()
+
+      });
+      inst.canvas.on('object:moving', function (e) {
+        console.log("moving ...");
+        if (inst.cropRegionMoving === false) return;
+
+        let target = e.target;
+        let newClip = {
+          left: target.left,
+          top: target.top,
+          right: inst.canvas.width - target.left + (target.left - inst.clip.left) * 2 + (target.width * target.scaleX) - target.width,
+          bottom: inst.canvas.height - target.top + (target.top - inst.clip.top) * 2 + (target.height * target.scaleY) - target.height
+        }
+        let updatedPath = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + newClip.top + ' H ' + newClip.left + ' V '
+          + newClip.bottom + ' H ' + newClip.right + ' V ' + newClip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z');
+
+        inst.clipOverlay.set({
+          path: updatedPath.path,
+        });
+        inst.clipOverlay.setCoords();
+
+        inst.canvas.bringToFront(inst.rectRed);
+        inst.canvas.setActiveObject(inst.rectRed)
+        inst.canvas.renderAll();
+      });
+
     },
     uploadImage(e) {
       this.imgUrl = URL.createObjectURL(e.target.files[0]);

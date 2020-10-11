@@ -130,7 +130,8 @@ export default (function () {
         mb: false,
         br: true
       }),
-        inst.canvas.add(rectRed);
+      
+      inst.canvas.add(rectRed);
       inst.canvas.bringToFront(rectRed);
       inst.canvas.setActiveObject(rectRed)
 
