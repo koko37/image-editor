@@ -348,49 +348,52 @@ export default {
         inst.cropRegionMoving = false;
       });
       inst.canvas.on("object:scaling", function (e) {
-        if (inst.cropRegionMoving === false) return;
-        let target = e.target;
-        let newClip = {
-          left: target.left,
-          top: target.top,
-          right: inst.canvas.width - target.left + (target.left - inst.clip.left) * 2 + (target.width * target.scaleX) - target.width,
-          bottom: inst.canvas.height - target.top + (target.top - inst.clip.top) * 2 + (target.height * target.scaleY) - target.height
+        if(e.target === inst.rectRed) {
+          if (inst.cropRegionMoving === false) return;
+          let target = e.target;
+          let newClip = {
+            left: target.left,
+            top: target.top,
+            right: inst.canvas.width - target.left + (target.left - inst.clip.left) * 2 + (target.width * target.scaleX) - target.width,
+            bottom: inst.canvas.height - target.top + (target.top - inst.clip.top) * 2 + (target.height * target.scaleY) - target.height
+          }
+          let updatedPath = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + newClip.top + ' H ' + newClip.left + ' V '
+            + newClip.bottom + ' H ' + newClip.right + ' V ' + newClip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z');
+          inst.clipOverlay.set({
+            path: updatedPath.path,
+          });
+          inst.clipOverlay.setCoords();
+
+          inst.canvas.bringToFront(inst.rectRed);
+          inst.canvas.setActiveObject(inst.rectRed)
+
+          inst.canvas.renderAll()
         }
-        let updatedPath = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + newClip.top + ' H ' + newClip.left + ' V '
-          + newClip.bottom + ' H ' + newClip.right + ' V ' + newClip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z');
-        inst.clipOverlay.set({
-          path: updatedPath.path,
-        });
-        inst.clipOverlay.setCoords();
-
-        inst.canvas.bringToFront(inst.rectRed);
-        inst.canvas.setActiveObject(inst.rectRed)
-
-        inst.canvas.renderAll()
-
       });
       inst.canvas.on('object:moving', function (e) {
         console.log("moving ...");
-        if (inst.cropRegionMoving === false) return;
+        if(e.target === inst.rectRed) {
+          if (inst.cropRegionMoving === false) return;
 
-        let target = e.target;
-        let newClip = {
-          left: target.left,
-          top: target.top,
-          right: inst.canvas.width - target.left + (target.left - inst.clip.left) * 2 + (target.width * target.scaleX) - target.width,
-          bottom: inst.canvas.height - target.top + (target.top - inst.clip.top) * 2 + (target.height * target.scaleY) - target.height
+          let target = e.target;
+          let newClip = {
+            left: target.left,
+            top: target.top,
+            right: inst.canvas.width - target.left + (target.left - inst.clip.left) * 2 + (target.width * target.scaleX) - target.width,
+            bottom: inst.canvas.height - target.top + (target.top - inst.clip.top) * 2 + (target.height * target.scaleY) - target.height
+          }
+          let updatedPath = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + newClip.top + ' H ' + newClip.left + ' V '
+            + newClip.bottom + ' H ' + newClip.right + ' V ' + newClip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z');
+
+          inst.clipOverlay.set({
+            path: updatedPath.path,
+          });
+          inst.clipOverlay.setCoords();
+
+          inst.canvas.bringToFront(inst.rectRed);
+          inst.canvas.setActiveObject(inst.rectRed)
+          inst.canvas.renderAll();
         }
-        let updatedPath = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + newClip.top + ' H ' + newClip.left + ' V '
-          + newClip.bottom + ' H ' + newClip.right + ' V ' + newClip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z');
-
-        inst.clipOverlay.set({
-          path: updatedPath.path,
-        });
-        inst.clipOverlay.setCoords();
-
-        inst.canvas.bringToFront(inst.rectRed);
-        inst.canvas.setActiveObject(inst.rectRed)
-        inst.canvas.renderAll();
       });
 
     },
