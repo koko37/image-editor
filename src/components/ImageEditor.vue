@@ -89,31 +89,12 @@ export default {
       cropRegionMoving: false,
       rectRed: null,
       bgImage: null,
+
+      blurFilter: null,
     };
   },
   mounted() {
     this.canvas = new fabric.Canvas('editor');
-    // let rect = new fabric.Rect({
-    //   left: 10,
-    //   top: 10,
-    //   width: 20,
-    //   height: 20,
-    //   fill: 'red'
-    // });
-    // this.canvas.add(rect);
-
-    // if (this.imageUrl) {
-    //   this.$refs.editor.setBackgroundImage(this.imageUrl);
-    //   this.croppedImage = this.$refs.editor.croppedImage;
-    // }
-    // this.$watch(
-    //   () => {
-    //     return this.$refs.editor.croppedImage;
-    //   },
-    //   (val) => {
-    //     this.croppedImage = val;
-    //   }
-    // );
   },
   methods: {
     onClickZoom() {
@@ -281,18 +262,19 @@ export default {
       // clear previous state
       this.deactiveCrop();
       this.currentSubTool = "";
-
       this.currentTool="blur";
     },
     onBlurDegreeChanged(e) {
       const intensity = parseFloat(e.target.value)/100;
       console.log("blur intensity:", intensity);
-      let filter = new fabric.Image.filters.Blur({
+      this.blurFilter = new fabric.Image.filters.Blur({
         blur: intensity
       });
-      let obj = this.canvas.getActiveObject();
-
-      obj.filters.push(filter);
+      let inst = this;
+      inst.canvas.getObjects().forEach((obj) => {
+        obj.filters.push(inst.blurFilter);
+        obj.applyFilters();
+      })     
       this.canvas.renderAll();
     },
     deactiveCrop() {
