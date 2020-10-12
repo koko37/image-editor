@@ -1,7 +1,7 @@
 .main {
   @apply flex flex-col w-full min-h-screen;
   @screen md {
-    @apply flex-row;
+    @apply flex-row justify-between;
   }
 }
 
