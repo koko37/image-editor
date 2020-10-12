@@ -284,7 +284,7 @@ export default {
     },
     saveImage() {
       const link = document.createElement('a');
-      link.setAttribute('href', this.canvas.toDataURL("image/jpeg", 1));
+      link.setAttribute('href', this.canvas.toDataURL("image/png", 1));
       link.setAttribute('download', 'edit-result');
       link.click();
     },
@@ -320,7 +320,6 @@ export default {
         }
       });
       inst.canvas.on('object:moving', function (e) {
-        console.log("moving ...");
         if(e.target === inst.rectRed) {
           if (inst.cropRegionMoving === false) return;
 
@@ -354,8 +353,8 @@ export default {
 
       this.imgUrl = URL.createObjectURL(e.target.files[0]);
       let imgObj = new Image();
-      const imgHeightLimit = Math.round(window.innerHeight * 0.8);
-      const imgWidthLimit = Math.round(window.innerWidth * 0.8);
+      const imgHeightLimit = Math.round(window.innerHeight * 0.9);
+      const imgWidthLimit = Math.round(window.innerWidth * 0.9);
       let imgDrawWidth, imgDrawHeight;
       let scaleX, scaleY;
       let inst = this;
@@ -363,6 +362,9 @@ export default {
       imgObj.src = this.imgUrl;
       imgObj.onload = () => {
         const imgSizeAspect = imgObj.width / imgObj.height;
+
+        console.log("screen size:", window.innerWidth, window.innerHeight);
+        console.log("img size:", imgObj.width, imgObj.height);
 
         // adjust image size to draw
         if (imgObj.height > imgHeightLimit) {
@@ -372,15 +374,17 @@ export default {
           imgDrawWidth = imgObj.width;
           imgDrawHeight = imgObj.height;
         }
+
+        console.log("canvas size1:", imgDrawWidth, imgDrawHeight);
+
         if (imgDrawWidth > imgWidthLimit) {
           imgDrawWidth = imgWidthLimit;
           imgDrawHeight = Math.round(imgDrawWidth / imgSizeAspect);
         } 
-
+        
+        console.log("canvas size2:", imgDrawWidth, imgDrawHeight);
         inst.scaleX = inst.scaleY = imgDrawHeight / imgObj.height;
 
-        console.log("img size:", imgObj.width, imgObj.height);
-        console.log("canvas size:", imgDrawWidth, imgDrawHeight);
         console.log("scale:", inst.scaleX, inst.scaleY);
 
         this.canvas.setDimensions({
@@ -390,7 +394,14 @@ export default {
 
         fabric.Image.fromURL(this.imgUrl, function(newImg){
           inst.canvas.clear();
-          inst.bgImage = newImg.set({left: 0, top: 0, sclaeX: inst.scaleX, scaleY: inst.scaleY});
+          inst.bgImage = newImg.set({
+            left: 0, 
+            top: 0, 
+            sclaeX: inst.scaleX, 
+            scaleY: inst.scaleY,
+            width: imgObj.width,
+            height: imgObj.height,
+            });
           inst.bgImage.selectable = false;
 
           inst.canvas.add(inst.bgImage);
