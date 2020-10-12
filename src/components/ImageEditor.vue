@@ -397,10 +397,8 @@ export default {
           inst.bgImage = newImg.set({
             left: 0, 
             top: 0, 
-            sclaeX: inst.scaleX, 
-            scaleY: inst.scaleY,
-            width: imgObj.width,
-            height: imgObj.height,
+            scaleX: inst.scaleX,
+            scaleY: inst.scaleY
             });
           inst.bgImage.selectable = false;
 
