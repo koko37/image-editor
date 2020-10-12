@@ -255,8 +255,8 @@ export default {
         inst.bgImage.selectable = false;
 
         // save image size
-        inst.originalWidth = inst.bgImage.width;
-        inst.originalHeight = inst.bgImage.height;
+        inst.originalWidth = inst.canvas.width;
+        inst.originalHeight = inst.canvas.height;
 
         inst.canvas.add(inst.bgImage);
         inst.canvas.renderAll();
