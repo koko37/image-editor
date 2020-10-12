@@ -8,8 +8,11 @@
 .container {
   @apply flex-grow;
   @apply flex items-center justify-center;
+  margin-bottom: $toolbar-height--mobile;
+
   @screen md{
     @apply min-h-screen;
+    margin-bottom: 0;
   }
 }
 
@@ -18,9 +21,14 @@
   @apply bg-gray-600 text-white;
 
   @apply  w-full;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: $toolbar-height--mobile;
 
   @screen md{
+    position: static;
     width: $toolbar-width--md;
     @apply flex-col justify-between min-h-screen;
   }
