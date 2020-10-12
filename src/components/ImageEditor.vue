@@ -8,7 +8,7 @@
       <div class="main-tool flex-grow">
         <Tool :event="() => onClickZoom()" :iconClass="'fas fa-search fa-lg'" :active="currentTool==='zoom'">Zoom</Tool>
         <div v-show="currentTool==='zoom'" class="subtool">
-          <input type="range" name="zoom" id="zoom" min="0" max="100" class="w-full" />
+          <input type="range" name="zoom" id="zoom" min="0" max="100" class="w-full" value="50" @change="onZoomDegreeChanged" />
         </div>
 
         <Tool
@@ -77,8 +77,11 @@ export default {
   data() {
     return {
       imgUrl: null,
+
       scaleX: null,
       scaleY: null,
+      originalWidth: null,
+      originalHeight: null,
 
       currentTool: '',
       currentSubTool: '',
@@ -103,6 +106,16 @@ export default {
       this.currentSubTool = "";
 
       this.currentTool="zoom"
+    },
+    onZoomDegreeChanged(e) {
+      const intensity = parseFloat(e.target.value)/200 + 1;
+      console.log("zoom intensity:", intensity);
+      this.canvas.setDimensions({
+          width: this.originalWidth * intensity,
+          height: this.originalHeight * intensity,
+        });
+      this.canvas.setZoom(intensity);
+      this.canvas.renderAll();
     },
     onClickCrop() {
       // clear previous state
@@ -222,6 +235,10 @@ export default {
           originY: 'center'
         });
         inst.bgImage.selectable = false;
+
+        // save image size
+        this.originalWidth = inst.bgImage.width;
+        this.originalHeight = inst.bgImage.height;
 
         inst.canvas.add(inst.bgImage);
         inst.canvas.renderAll();
@@ -391,6 +408,9 @@ export default {
           width: imgDrawWidth,
           height: imgDrawHeight,
         });
+        // save image size
+        this.originalWidth = imgDrawWidth;
+        this.originalHeight = imgDrawHeight;
 
         fabric.Image.fromURL(this.imgUrl, function(newImg){
           inst.canvas.clear();
