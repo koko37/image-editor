@@ -8,7 +8,7 @@
       <div class="main-tool flex-grow">
         <Tool :event="() => onClickZoom()" :iconClass="'fas fa-search fa-lg'" :active="currentTool==='zoom'">Zoom</Tool>
         <div v-show="currentTool==='zoom'" class="subtool">
-          <input type="range" name="zoom" id="zoom" min="0" max="100" class="w-full" value="50" @change="onZoomDegreeChanged" />
+          <input type="range" name="zoom" id="zoom" min="0" max="100" class="w-full" value="0" @change="onZoomDegreeChanged" />
         </div>
 
         <Tool
@@ -365,6 +365,8 @@ export default {
     uploadImage(e) {
       // update previous state
       this.deactiveCrop();
+      this.canvas.clear();
+      this.canvas.setZoom(1);
       this.currentSubTool = "";
       this.currentTool = "";
 
