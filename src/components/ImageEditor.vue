@@ -8,7 +8,7 @@
       <div class="main-tool flex-grow">
         <Tool :event="() => onClickZoom()" :iconClass="'fas fa-search fa-lg'" :active="currentTool==='zoom'">Zoom</Tool>
         <div v-show="currentTool==='zoom'" class="subtool">
-          <input type="range" name="zoom" id="zoom" min="0" max="100" class="w-full" value="0" @change="onZoomDegreeChanged" />
+          <input type="range" name="zoom" id="zoomSlider" min="0" max="100" class="w-full" value="0" @change="onZoomDegreeChanged" />
         </div>
 
         <Tool
@@ -45,7 +45,7 @@
 
         <Tool :event="() => onClickBlur()" :iconClass="'fas fa-stroopwafel fa-lg'" :active="currentTool==='blur'">Blur</Tool>
         <div v-show="currentTool==='blur'" class="subtool">
-          <input type="range" name="blur" id="blur" min="0" max="100" class="w-full" value="0" @change="onBlurDegreeChanged" />
+          <input type="range" name="blur" id="blurSlider" min="0" max="100" class="w-full" value="0" @change="onBlurDegreeChanged" />
         </div>
       </div>
       <div class="load-tool flex-grow-0">
@@ -82,6 +82,7 @@ export default {
       scaleY: null,
       originalWidth: null,
       originalHeight: null,
+      currentZoom: 1,
 
       currentTool: '',
       currentSubTool: '',
@@ -115,7 +116,16 @@ export default {
           height: this.originalHeight * intensity,
         });
       this.canvas.setZoom(intensity);
+      this.currentZoom = intensity;
+      // this.canvas.getObjects().forEach((obj) => {
+      //   obj.scaleX = intensity;
+      //   obj.scaleY = intensity;
+      //   obj.left = obj.left * intensity;
+      //   obj.top = obj.top * intensity;
+      //   obj.setCoords();
+      // });
       this.canvas.renderAll();
+      this.canvas.calcOffset();
     },
     onClickCrop() {
       // clear previous state
@@ -125,6 +135,7 @@ export default {
 
       const cropperWidth = this.canvas.width * 0.5;
       const cropperHeight = this.canvas.height * 0.5;
+
       const cornerSize = 10;
       const hasControls = true;
       const borderColor = '#000';
@@ -139,16 +150,20 @@ export default {
       this.bindCropEvents();
       this.canvas.selectable = false;
       this.canvas.uniScaleTransform = true;
-      this.canvas.renderAll();
 
+      this.canvas.renderAll();
+      
       let inst = this;
       let src = this.canvas.toDataURL('image/jpeg', 1);
       new fabric.Image.fromURL(src, function (oImg) {
+        console.log("croper size:", cropperWidth, cropperHeight);
+        console.log("oImage size:", oImg.width, oImg.height);
+        
         inst.rectRed = new fabric.Rect({
-          left: (oImg.width - cropperWidth) / 2,
-          top: (oImg.height - cropperHeight) / 2,
-          width: cropperWidth,
-          height: cropperHeight,
+          left: (oImg.width - cropperWidth) / 2 / inst.currentZoom,
+          top: (oImg.height - cropperHeight) / 2 / inst.currentZoom,
+          width: cropperWidth / inst.currentZoom,
+          height: cropperHeight / inst.currentZoom,
           fill: '',
           imageWidth: oImg.width,
           imageHeight: oImg.height,
@@ -223,30 +238,35 @@ export default {
       console.log("selectedRect: ", selectedRect.left, selectedRect.top, selectedRect.width, selectedRect.height);
       inst.canvas.clear();
       
-      inst.canvas.setWidth(inst.rectRed.width * inst.rectRed.scaleX);
-      inst.canvas.setHeight(inst.rectRed.height * inst.rectRed.scaleY);
+      inst.canvas.setWidth(inst.rectRed.width * inst.rectRed.scaleX * inst.currentZoom);
+      inst.canvas.setHeight(inst.rectRed.height * inst.rectRed.scaleY * inst.currentZoom);
 
       fabric.Image.fromURL(this.imgUrl, function(newImg){
-        console.log("crop: ", selectedRect);
+        console.log("crop: ", selectedRect.width * inst.currentZoom, selectedRect.height * inst.currentZoom);
         inst.bgImage = newImg.set({
           left: (selectedRect.width / 2 - selectedRect.left + clipRect.left),
           top: (selectedRect.height / 2 - selectedRect.top + clipRect.top),
+          scaleX: 1 / inst.currentZoom,
+          scaleY: 1 / inst.currentZoom,
           originX: 'center',
           originY: 'center'
         });
+        
         inst.bgImage.selectable = false;
 
         // save image size
-        this.originalWidth = inst.bgImage.width;
-        this.originalHeight = inst.bgImage.height;
+        inst.originalWidth = inst.bgImage.width;
+        inst.originalHeight = inst.bgImage.height;
 
         inst.canvas.add(inst.bgImage);
         inst.canvas.renderAll();
+        inst.currentZoom = 1;
       });
 
       this.deactiveCrop();
       this.currentTool="";
       this.cropRegionMoving = false;
+      document.getElementById('zoomSlider').value = 0;
     },
     onClickMask() {
       this.deactiveCrop();
@@ -320,8 +340,8 @@ export default {
           let newClip = {
             left: target.left,
             top: target.top,
-            right: inst.canvas.width - target.left + (target.left - inst.clip.left) * 2 + (target.width * target.scaleX) - target.width,
-            bottom: inst.canvas.height - target.top + (target.top - inst.clip.top) * 2 + (target.height * target.scaleY) - target.height
+            right: target.left + target.width * target.scaleX,
+            bottom: target.top + target.height * target.scaleY
           }
           let updatedPath = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + newClip.top + ' H ' + newClip.left + ' V '
             + newClip.bottom + ' H ' + newClip.right + ' V ' + newClip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z');
@@ -344,8 +364,8 @@ export default {
           let newClip = {
             left: target.left,
             top: target.top,
-            right: inst.canvas.width - target.left + (target.left - inst.clip.left) * 2 + (target.width * target.scaleX) - target.width,
-            bottom: inst.canvas.height - target.top + (target.top - inst.clip.top) * 2 + (target.height * target.scaleY) - target.height
+            right: target.left + target.width * target.scaleX,
+            bottom: target.top + target.height * target.scaleY
           }
           let updatedPath = new fabric.Path('M 0 0 H ' + inst.canvas.width + ' V ' + newClip.top + ' H ' + newClip.left + ' V '
             + newClip.bottom + ' H ' + newClip.right + ' V ' + newClip.top + ' H ' + inst.canvas.width + ' V ' + inst.canvas.height + ' H 0 Z');
@@ -360,20 +380,24 @@ export default {
           inst.canvas.renderAll();
         }
       });
-
     },
     uploadImage(e) {
       // update previous state
       this.deactiveCrop();
       this.canvas.clear();
       this.canvas.setZoom(1);
+      this.currentZoom = 1;
+
+      document.getElementById('zoomSlider').value = 0;
+      document.getElementById('blurSlider').value = 0;
+
       this.currentSubTool = "";
       this.currentTool = "";
 
       this.imgUrl = URL.createObjectURL(e.target.files[0]);
       let imgObj = new Image();
-      const imgHeightLimit = Math.round(window.innerHeight * 0.9);
-      const imgWidthLimit = Math.round(window.innerWidth * 0.9);
+      const imgHeightLimit = Math.round(window.innerHeight * 0.7);
+      const imgWidthLimit = Math.round(window.innerWidth * 0.7);
       let imgDrawWidth, imgDrawHeight;
       let scaleX, scaleY;
       let inst = this;
