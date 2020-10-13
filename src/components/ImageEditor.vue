@@ -102,6 +102,7 @@ export default {
   },
   methods: {
     onClickZoom() {
+      console.log("zoom selected...");
       // clear previous state
       this.deactiveCrop();
       this.currentSubTool = "";
@@ -109,6 +110,7 @@ export default {
       this.currentTool="zoom"
     },
     onZoomDegreeChanged(e) {
+      console.log("zoom degree changed...");
       const intensity = parseFloat(e.target.value)/150 + 1;
       console.log("zoom intensity:", intensity);
       this.canvas.setDimensions({
@@ -128,6 +130,7 @@ export default {
       this.canvas.calcOffset();
     },
     onClickCrop() {
+      console.log("select crop...");
       // clear previous state
       this.currentSubTool = "";
 
@@ -227,6 +230,7 @@ export default {
       this.canvas.renderAll();
     },
     onClickApplyCrop() {
+      console.log("apply crop...");
       let image;
       let inst = this;
       const selectedRect = inst.rectRed;
@@ -269,11 +273,13 @@ export default {
       document.getElementById('zoomSlider').value = 0;
     },
     onClickMask() {
+      console.log("select mask tool...");
       this.deactiveCrop();
       this.currentTool="mask";
       this.currentSubTool = "";
     },
     onClickMaskType(maskType) {
+      console.log("mask type changed...");
       console.log("sub type:", maskType);
       this.currentSubTool = maskType;
       let inst = this;
@@ -296,12 +302,14 @@ export default {
       });
     },
     onClickBlur() {
+      console.log("blur tool selected...");
       // clear previous state
       this.deactiveCrop();
       this.currentSubTool = "";
       this.currentTool="blur";
     },
     onBlurDegreeChanged(e) {
+      console.log("blur degree changed...");
       const intensity = parseFloat(e.target.value)/100;
       console.log("blur intensity:", intensity);
       this.blurFilter = new fabric.Image.filters.Blur({
@@ -332,6 +340,8 @@ export default {
       this.currentTool = "";
     },
     saveImage() {
+      console.log("save image ...");
+
       const link = document.createElement('a');
       link.setAttribute('href', this.canvas.toDataURL("image/png", 1));
       link.setAttribute('download', 'edit-result');
@@ -394,6 +404,7 @@ export default {
       });
     },
     uploadImage(e) {
+      console.log("upload image");
       // update previous state
       this.clearState();
 
