@@ -8,7 +8,7 @@
 .container {
   @apply flex-grow;
   @apply flex items-center justify-center;
-  margin-bottom: $toolbar-height--mobile;
+  margin-bottom: $toolbar-height--mobile + $subtoolbar-height-mobile;
 
   @screen md{
     @apply min-h-screen;
