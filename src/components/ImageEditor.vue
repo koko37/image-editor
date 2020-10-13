@@ -109,7 +109,7 @@ export default {
       this.currentTool="zoom"
     },
     onZoomDegreeChanged(e) {
-      const intensity = parseFloat(e.target.value)/200 + 1;
+      const intensity = parseFloat(e.target.value)/150 + 1;
       console.log("zoom intensity:", intensity);
       this.canvas.setDimensions({
           width: this.originalWidth * intensity,
