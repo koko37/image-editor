@@ -319,6 +319,18 @@ export default {
       this.canvas.remove(this.clipOverlay);
       this.canvas.remove(this.rectRed);
     },
+    clearState() {
+      this.deactiveCrop();
+      this.canvas.clear();
+      this.canvas.setZoom(1);
+      this.currentZoom = 1;
+
+      document.getElementById('zoomSlider').value = 0;
+      document.getElementById('blurSlider').value = 0;
+
+      this.currentSubTool = "";
+      this.currentTool = "";
+    },
     saveImage() {
       const link = document.createElement('a');
       link.setAttribute('href', this.canvas.toDataURL("image/png", 1));
@@ -383,16 +395,7 @@ export default {
     },
     uploadImage(e) {
       // update previous state
-      this.deactiveCrop();
-      this.canvas.clear();
-      this.canvas.setZoom(1);
-      this.currentZoom = 1;
-
-      document.getElementById('zoomSlider').value = 0;
-      document.getElementById('blurSlider').value = 0;
-
-      this.currentSubTool = "";
-      this.currentTool = "";
+      this.clearState();
 
       this.imgUrl = URL.createObjectURL(e.target.files[0]);
       let imgObj = new Image();
